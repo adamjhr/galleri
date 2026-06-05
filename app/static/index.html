@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Galleri</title>
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+  <header class="site-header">
+    <span class="site-title">Galleri</span>
+    <nav>
+      <button id="upload-btn">Upload</button>
+      <a id="admin-link" href="/admin.html" class="hidden">Admin</a>
+      <button id="logout-btn">Log out</button>
+    </nav>
+  </header>
+
+  <main>
+    <div id="gallery" class="gallery-grid"></div>
+    <p id="empty-msg" class="empty-msg hidden">No images yet.</p>
+  </main>
+
+  <!-- Upload modal -->
+  <div id="upload-modal" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal-box">
+      <h2>Upload image</h2>
+      <form id="upload-form">
+        <label for="up-file">Image file</label>
+        <input id="up-file" type="file" accept="image/*" required>
+
+        <label for="up-name">Name</label>
+        <input id="up-name" type="text" required>
+
+        <label for="up-desc">Description (optional)</label>
+        <textarea id="up-desc" rows="3"></textarea>
+
+        <label>Date (optional)</label>
+        <div class="date-row">
+          <select id="up-date-precision">
+            <option value="">— no date —</option>
+            <option value="year">Year</option>
+            <option value="month">Month</option>
+            <option value="week">Week</option>
+            <option value="day">Day</option>
+          </select>
+          <!-- year -->
+          <select id="up-date-year" class="hidden"></select>
+          <!-- month: year + month -->
+          <div id="up-date-month" class="compound-date hidden">
+            <select id="up-date-month-y"></select>
+            <select id="up-date-month-m"></select>
+          </div>
+          <!-- week: year + month + week-of-month -->
+          <div id="up-date-week" class="compound-date hidden">
+            <select id="up-date-week-y"></select>
+            <select id="up-date-week-m"></select>
+            <select id="up-date-week-n">
+              <option value="1">Week 1</option>
+              <option value="2">Week 2</option>
+              <option value="3">Week 3</option>
+              <option value="4">Week 4</option>
+              <option value="5">Week 5</option>
+            </select>
+          </div>
+          <!-- day: year + month + day -->
+          <div id="up-date-day" class="compound-date hidden">
+            <select id="up-date-day-y"></select>
+            <select id="up-date-day-m"></select>
+            <select id="up-date-day-d"></select>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="submit" id="up-submit">Upload</button>
+          <button type="button" id="up-cancel">Cancel</button>
+        </div>
+        <p id="up-error" class="error hidden"></p>
+      </form>
+    </div>
+  </div>
+
+  <!-- Lightbox -->
+  <div id="lightbox" class="lightbox hidden" role="dialog" aria-modal="true">
+    <button id="lb-close" aria-label="Close">✕</button>
+    <img id="lb-img" src="" alt="">
+    <div class="lb-info">
+      <div id="lb-view-mode">
+        <p id="lb-name"></p>
+        <p id="lb-date"></p>
+        <p id="lb-desc"></p>
+        <div class="lb-actions">
+          <a id="lb-download" href="#">Download</a>
+          <button id="lb-edit">Edit</button>
+          <button id="lb-delete" class="danger">Delete</button>
+        </div>
+      </div>
+      <div id="lb-edit-mode" class="hidden">
+        <input id="lb-edit-name" type="text">
+        <textarea id="lb-edit-desc" rows="2"></textarea>
+        <div class="date-row">
+          <select id="lb-edit-date-precision">
+            <option value="">— no date —</option>
+            <option value="year">Year</option>
+            <option value="month">Month</option>
+            <option value="week">Week</option>
+            <option value="day">Day</option>
+          </select>
+          <!-- year -->
+          <select id="lb-edit-date-year" class="hidden"></select>
+          <!-- month -->
+          <div id="lb-edit-date-month" class="compound-date hidden">
+            <select id="lb-edit-date-month-y"></select>
+            <select id="lb-edit-date-month-m"></select>
+          </div>
+          <!-- week -->
+          <div id="lb-edit-date-week" class="compound-date hidden">
+            <select id="lb-edit-date-week-y"></select>
+            <select id="lb-edit-date-week-m"></select>
+            <select id="lb-edit-date-week-n">
+              <option value="1">Week 1</option>
+              <option value="2">Week 2</option>
+              <option value="3">Week 3</option>
+              <option value="4">Week 4</option>
+              <option value="5">Week 5</option>
+            </select>
+          </div>
+          <!-- day -->
+          <div id="lb-edit-date-day" class="compound-date hidden">
+            <select id="lb-edit-date-day-y"></select>
+            <select id="lb-edit-date-day-m"></select>
+            <select id="lb-edit-date-day-d"></select>
+          </div>
+        </div>
+        <div class="lb-actions">
+          <button id="lb-save">Save</button>
+          <button id="lb-cancel-edit">Cancel</button>
+        </div>
+        <p id="lb-edit-error" class="error hidden"></p>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/auth.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/date.js"></script>
+  <script src="/js/gallery.js"></script>
+</body>
+</html>

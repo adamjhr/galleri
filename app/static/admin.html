@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Galleri — Admin</title>
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="site-title" href="/">Galleri</a>
+    <nav>
+      <span>Admin</span>
+      <button id="logout-btn">Log out</button>
+    </nav>
+  </header>
+
+  <main class="admin-main">
+    <section>
+      <h2>Invite a user</h2>
+      <form id="invite-form">
+        <label for="invite-email">Email address</label>
+        <input id="invite-email" type="email" required>
+        <button type="submit">Create invite</button>
+      </form>
+      <p id="invite-error" class="error hidden"></p>
+      <div id="invite-result" class="invite-result hidden">
+        <p>Share this link with the invitee:</p>
+        <input id="invite-link" type="text" readonly>
+        <button id="invite-copy">Copy</button>
+      </div>
+    </section>
+
+    <section>
+      <h2>Users</h2>
+      <table id="users-table">
+        <thead>
+          <tr>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Admin</th>
+            <th>Status</th>
+            <th>Joined</th>
+          </tr>
+        </thead>
+        <tbody id="users-tbody"></tbody>
+      </table>
+    </section>
+  </main>
+
+  <script src="/js/auth.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/admin.js"></script>
+</body>
+</html>

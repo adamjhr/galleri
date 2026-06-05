@@ -1,0 +1,24 @@
+[Unit]
+Description=Galleri Flask application
+After=network.target
+
+[Service]
+Type=notify
+User=galleri
+Group=galleri
+WorkingDirectory=/srv/galleri
+EnvironmentFile=/srv/galleri/.env
+ExecStart=/srv/galleri/venv/bin/gunicorn \
+    --workers 2 \
+    --worker-class sync \
+    --bind unix:/run/galleri/galleri.sock \
+    --access-logfile /var/log/galleri/access.log \
+    --error-logfile /var/log/galleri/error.log \
+    wsgi:app
+RuntimeDirectory=galleri
+RuntimeDirectoryMode=0750
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

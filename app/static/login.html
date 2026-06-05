@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Galleri — Login</title>
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body class="auth-page">
+  <div class="auth-card">
+    <h1>Galleri</h1>
+
+    <form id="login-form">
+      <label for="username">Username</label>
+      <input id="username" type="text" autocomplete="username" required>
+
+      <label for="password">Password</label>
+      <input id="password" type="password" autocomplete="current-password" required>
+
+      <button type="submit">Log in</button>
+      <p id="login-error" class="error hidden"></p>
+    </form>
+
+    <p class="auth-footer">Have an invite? <a href="/register.html">Register</a></p>
+  </div>
+
+  <script src="/js/auth.js"></script>
+  <script>
+    if (Auth.isLoggedIn()) location.replace("/");
+
+    document.getElementById("login-form").addEventListener("submit", async e => {
+      e.preventDefault();
+      const err = document.getElementById("login-error");
+      err.classList.add("hidden");
+      try {
+        await Auth.login(
+          document.getElementById("username").value,
+          document.getElementById("password").value
+        );
+        location.replace("/");
+      } catch (ex) {
+        err.textContent = ex.message;
+        err.classList.remove("hidden");
+      }
+    });
+  </script>
+</body>
+</html>
