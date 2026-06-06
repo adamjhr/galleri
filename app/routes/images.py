@@ -76,6 +76,7 @@ def upload_image():
     cfg = current_app.config
 
     files = request.files.getlist("file")
+    current_app.logger.info("Upload received %d file(s): %s", len(files), [f.filename for f in files])
     if not files or all(f.filename == "" for f in files):
         return jsonify({"error": "No file provided"}), 400
 
