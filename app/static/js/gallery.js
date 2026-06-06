@@ -268,31 +268,19 @@ document.getElementById("upload-form").addEventListener("submit", async e => {
 
   try {
     const { date_value, date_precision } = DateField.read("up");
-    const fd = new FormData();
-    for (const file of files) fd.append("file", file);
-    fd.append("name", document.getElementById("up-name").value);
-    fd.append("description", document.getElementById("up-desc").value);
-    if (date_value) fd.append("date_value", date_value);
-    if (date_precision) fd.append("date_precision", date_precision);
+    const name = document.getElementById("up-name").value;
+    const description = document.getElementById("up-desc").value;
 
-    const xhr = new XMLHttpRequest();
-    xhr.open("POST", "/api/images");
-    xhr.setRequestHeader("Authorization", `Bearer ${Auth.getToken()}`);
-
-    await new Promise((resolve, reject) => {
-      xhr.upload.addEventListener("progress", ev => {
-        if (ev.lengthComputable && files.length > 1) {
-          const pct = Math.round((ev.loaded / ev.total) * files.length);
-          btn.textContent = `Uploading ${Math.min(pct, files.length - 1)} / ${files.length}…`;
-        }
-      });
-      xhr.addEventListener("load", () => {
-        if (xhr.status === 201) resolve(JSON.parse(xhr.responseText));
-        else reject(new Error(JSON.parse(xhr.responseText).error || `HTTP ${xhr.status}`));
-      });
-      xhr.addEventListener("error", () => reject(new Error("Network error")));
-      xhr.send(fd);
-    });
+    for (let i = 0; i < files.length; i++) {
+      if (files.length > 1) btn.textContent = `Uploading ${i + 1} / ${files.length}…`;
+      const fd = new FormData();
+      fd.append("file", files[i]);
+      fd.append("name", name);
+      fd.append("description", description);
+      if (date_value) fd.append("date_value", date_value);
+      if (date_precision) fd.append("date_precision", date_precision);
+      await API.postForm("/api/images", fd);
+    }
 
     _resetUploadModal();
     await loadGallery();

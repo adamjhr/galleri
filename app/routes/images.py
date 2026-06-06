@@ -75,9 +75,11 @@ def get_image(image_id):
 def upload_image():
     cfg = current_app.config
 
-    files = request.files.getlist("file")
-    current_app.logger.info("Upload received %d file(s): %s", len(files), [f.filename for f in files])
-    if not files or all(f.filename == "" for f in files):
+    if "file" not in request.files:
+        return jsonify({"error": "No file provided"}), 400
+
+    file = request.files["file"]
+    if file.filename == "":
         return jsonify({"error": "No file provided"}), 400
 
     name = (request.form.get("name") or "").strip()
@@ -88,40 +90,35 @@ def upload_image():
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
 
-    results = []
+    header = file.read(2048)
+    detected_mime = magic.from_buffer(header, mime=True)
+    if detected_mime not in cfg["ALLOWED_MIME_TYPES"]:
+        return jsonify({"error": f"Unsupported file type: {detected_mime}"}), 415
+
+    file.seek(0)
+    file_bytes = file.read()
+    file_size = len(file_bytes)
+    if file_size > cfg["MAX_UPLOAD_BYTES"]:
+        return jsonify({"error": "File exceeds 20 MB limit"}), 413
+
+    bucket_key = str(uuid.uuid4())
+    storage.upload_file(io.BytesIO(file_bytes), bucket_key, detected_mime)
+
     conn = get_conn()
-
-    for file in files:
-        header = file.read(2048)
-        detected_mime = magic.from_buffer(header, mime=True)
-        if detected_mime not in cfg["ALLOWED_MIME_TYPES"]:
-            conn.rollback()
-            return jsonify({"error": f"{file.filename}: unsupported file type ({detected_mime})"}), 415
-
-        file.seek(0)
-        file_bytes = file.read()
-        file_size = len(file_bytes)
-        if file_size > cfg["MAX_UPLOAD_BYTES"]:
-            conn.rollback()
-            return jsonify({"error": f"{file.filename}: exceeds 20 MB limit"}), 413
-
-        bucket_key = str(uuid.uuid4())
-        storage.upload_file(io.BytesIO(file_bytes), bucket_key, detected_mime)
-
-        with conn.cursor() as cur:
-            cur.execute(
-                f"""
-                INSERT INTO images (id, bucket_key, name, description, mime_type, file_size, uploaded_by, date_value, date_precision)
-                VALUES (gen_random_uuid(), %s, %s, %s, %s, %s, %s, %s, %s)
-                RETURNING {IMAGE_COLS}
-                """,
-                (bucket_key, name, description, detected_mime, file_size, g.user_id, date_value, date_precision),
-            )
-            cols = [d[0] for d in cur.description]
-            results.append(_serialize(cur.fetchone(), cols))
-
+    with conn.cursor() as cur:
+        cur.execute(
+            f"""
+            INSERT INTO images (id, bucket_key, name, description, mime_type, file_size, uploaded_by, date_value, date_precision)
+            VALUES (gen_random_uuid(), %s, %s, %s, %s, %s, %s, %s, %s)
+            RETURNING {IMAGE_COLS}
+            """,
+            (bucket_key, name, description, detected_mime, file_size, g.user_id, date_value, date_precision),
+        )
+        cols = [d[0] for d in cur.description]
+        row = cur.fetchone()
     conn.commit()
-    return jsonify(results), 201
+
+    return jsonify(_serialize(row, cols)), 201
 
 
 @bp.patch("/<image_id>")
