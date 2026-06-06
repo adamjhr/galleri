@@ -75,50 +75,52 @@ def get_image(image_id):
 def upload_image():
     cfg = current_app.config
 
-    if "file" not in request.files:
+    files = request.files.getlist("file")
+    if not files or all(f.filename == "" for f in files):
         return jsonify({"error": "No file provided"}), 400
 
-    file = request.files["file"]
     name = (request.form.get("name") or "").strip()
     description = (request.form.get("description") or "").strip() or None
-
-    if not name:
-        return jsonify({"error": "name is required"}), 400
 
     try:
         date_value, date_precision = _parse_date_fields(request.form)
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
 
-    header = file.read(2048)
-    detected_mime = magic.from_buffer(header, mime=True)
-    if detected_mime not in cfg["ALLOWED_MIME_TYPES"]:
-        return jsonify({"error": f"Unsupported file type: {detected_mime}"}), 415
-
-    file.seek(0)
-    file_bytes = file.read()
-    file_size = len(file_bytes)
-    if file_size > cfg["MAX_UPLOAD_BYTES"]:
-        return jsonify({"error": "File exceeds 20 MB limit"}), 413
-
-    bucket_key = str(uuid.uuid4())
-    storage.upload_file(io.BytesIO(file_bytes), bucket_key, detected_mime)
-
+    results = []
     conn = get_conn()
-    with conn.cursor() as cur:
-        cur.execute(
-            f"""
-            INSERT INTO images (id, bucket_key, name, description, mime_type, file_size, uploaded_by, date_value, date_precision)
-            VALUES (gen_random_uuid(), %s, %s, %s, %s, %s, %s, %s, %s)
-            RETURNING {IMAGE_COLS}
-            """,
-            (bucket_key, name, description, detected_mime, file_size, g.user_id, date_value, date_precision),
-        )
-        cols = [d[0] for d in cur.description]
-        row = cur.fetchone()
-    conn.commit()
 
-    return jsonify(_serialize(row, cols)), 201
+    for file in files:
+        header = file.read(2048)
+        detected_mime = magic.from_buffer(header, mime=True)
+        if detected_mime not in cfg["ALLOWED_MIME_TYPES"]:
+            conn.rollback()
+            return jsonify({"error": f"{file.filename}: unsupported file type ({detected_mime})"}), 415
+
+        file.seek(0)
+        file_bytes = file.read()
+        file_size = len(file_bytes)
+        if file_size > cfg["MAX_UPLOAD_BYTES"]:
+            conn.rollback()
+            return jsonify({"error": f"{file.filename}: exceeds 20 MB limit"}), 413
+
+        bucket_key = str(uuid.uuid4())
+        storage.upload_file(io.BytesIO(file_bytes), bucket_key, detected_mime)
+
+        with conn.cursor() as cur:
+            cur.execute(
+                f"""
+                INSERT INTO images (id, bucket_key, name, description, mime_type, file_size, uploaded_by, date_value, date_precision)
+                VALUES (gen_random_uuid(), %s, %s, %s, %s, %s, %s, %s, %s)
+                RETURNING {IMAGE_COLS}
+                """,
+                (bucket_key, name, description, detected_mime, file_size, g.user_id, date_value, date_precision),
+            )
+            cols = [d[0] for d in cur.description]
+            results.append(_serialize(cur.fetchone(), cols))
+
+    conn.commit()
+    return jsonify(results), 201
 
 
 @bp.patch("/<image_id>")
@@ -140,11 +142,8 @@ def update_image(image_id):
     values = []
 
     if "name" in data:
-        name = (data["name"] or "").strip()
-        if not name:
-            return jsonify({"error": "name cannot be empty"}), 400
         fields.append("name = %s")
-        values.append(name)
+        values.append((data["name"] or "").strip())
 
     if "description" in data:
         fields.append("description = %s")

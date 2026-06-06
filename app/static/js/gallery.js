@@ -211,12 +211,6 @@ document.getElementById("lb-save").addEventListener("click", async () => {
   const err = document.getElementById("lb-edit-error");
   err.classList.add("hidden");
 
-  if (!name) {
-    err.textContent = "Name cannot be empty.";
-    err.classList.remove("hidden");
-    return;
-  }
-
   try {
     const updated = await API.patch(`/api/images/${_activeImage.id}`, { name, description, date_value, date_precision });
     _activeImage = { ..._activeImage, name: updated.name, description: updated.description, date_value: updated.date_value, date_precision: updated.date_precision };
@@ -241,12 +235,26 @@ document.getElementById("upload-btn").addEventListener("click", () => {
   document.getElementById("upload-modal").classList.remove("hidden");
 });
 
-document.getElementById("up-cancel").addEventListener("click", () => {
+document.getElementById("up-file").addEventListener("change", () => {
+  const count = document.getElementById("up-file").files.length;
+  const el = document.getElementById("up-file-count");
+  if (count > 1) {
+    el.textContent = `${count} files selected`;
+    el.classList.remove("hidden");
+  } else {
+    el.classList.add("hidden");
+  }
+});
+
+function _resetUploadModal() {
   document.getElementById("upload-modal").classList.add("hidden");
   document.getElementById("upload-form").reset();
+  document.getElementById("up-file-count").classList.add("hidden");
   DateField.reset("up");
   document.getElementById("up-error").classList.add("hidden");
-});
+}
+
+document.getElementById("up-cancel").addEventListener("click", _resetUploadModal);
 
 document.getElementById("upload-form").addEventListener("submit", async e => {
   e.preventDefault();
@@ -254,20 +262,39 @@ document.getElementById("upload-form").addEventListener("submit", async e => {
   const btn = document.getElementById("up-submit");
   err.classList.add("hidden");
   btn.disabled = true;
-  btn.textContent = "Uploading…";
+
+  const files = document.getElementById("up-file").files;
+  btn.textContent = files.length > 1 ? `Uploading 0 / ${files.length}…` : "Uploading…";
 
   try {
     const { date_value, date_precision } = DateField.read("up");
     const fd = new FormData();
-    fd.append("file", document.getElementById("up-file").files[0]);
+    for (const file of files) fd.append("file", file);
     fd.append("name", document.getElementById("up-name").value);
     fd.append("description", document.getElementById("up-desc").value);
     if (date_value) fd.append("date_value", date_value);
     if (date_precision) fd.append("date_precision", date_precision);
-    await API.postForm("/api/images", fd);
-    document.getElementById("upload-modal").classList.add("hidden");
-    document.getElementById("upload-form").reset();
-    DateField.reset("up");
+
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", "/api/images");
+    xhr.setRequestHeader("Authorization", `Bearer ${Auth.getToken()}`);
+
+    await new Promise((resolve, reject) => {
+      xhr.upload.addEventListener("progress", ev => {
+        if (ev.lengthComputable && files.length > 1) {
+          const pct = Math.round((ev.loaded / ev.total) * files.length);
+          btn.textContent = `Uploading ${Math.min(pct, files.length - 1)} / ${files.length}…`;
+        }
+      });
+      xhr.addEventListener("load", () => {
+        if (xhr.status === 201) resolve(JSON.parse(xhr.responseText));
+        else reject(new Error(JSON.parse(xhr.responseText).error || `HTTP ${xhr.status}`));
+      });
+      xhr.addEventListener("error", () => reject(new Error("Network error")));
+      xhr.send(fd);
+    });
+
+    _resetUploadModal();
     await loadGallery();
   } catch (ex) {
     err.textContent = ex.message;

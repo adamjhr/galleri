@@ -26,11 +26,12 @@
     <div class="modal-box">
       <h2>Upload image</h2>
       <form id="upload-form">
-        <label for="up-file">Image file</label>
-        <input id="up-file" type="file" accept="image/*" required>
+        <label for="up-file">Image files</label>
+        <input id="up-file" type="file" accept="image/*" multiple>
+        <p id="up-file-count" class="file-count hidden"></p>
 
-        <label for="up-name">Name</label>
-        <input id="up-name" type="text" required>
+        <label for="up-name">Name (optional)</label>
+        <input id="up-name" type="text">
 
         <label for="up-desc">Description (optional)</label>
         <textarea id="up-desc" rows="3"></textarea>
