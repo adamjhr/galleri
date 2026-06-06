@@ -76,6 +76,7 @@ async function loadGallery() {
 
   const grid = document.getElementById("gallery");
   const empty = document.getElementById("empty-msg");
+  document.getElementById("loading-msg").classList.add("hidden");
   grid.innerHTML = "";
 
   if (images.length === 0) {

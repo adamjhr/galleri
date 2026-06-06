@@ -163,6 +163,14 @@ main { padding: var(--gap) 1.25rem; }
 
 .empty-msg { text-align: center; color: var(--muted); margin-top: 4rem; font-size: 0.9rem; }
 
+.loading-msg {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin-top: 2rem;
+  animation: blink 1s step-start infinite;
+}
+@keyframes blink { 50% { opacity: 0; } }
+
 /* ── Modal ──────────────────────────────────────────────────── */
 
 .modal {
