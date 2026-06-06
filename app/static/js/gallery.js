@@ -1,3 +1,4 @@
+console.log("gallery.js: top");
 Auth.requireAuth();
 
 if (Auth.isAdmin()) {
@@ -256,7 +257,9 @@ function _resetUploadModal() {
 
 document.getElementById("up-cancel").addEventListener("click", _resetUploadModal);
 
+console.log("gallery.js: attaching submit handler");
 document.getElementById("upload-form").addEventListener("submit", async e => {
+  console.log("gallery.js: submit fired");
   e.preventDefault();
   const err = document.getElementById("up-error");
   const btn = document.getElementById("up-submit");
