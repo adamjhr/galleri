@@ -71,12 +71,12 @@ function _makeTile(img, url) {
 }
 
 async function loadGallery() {
+  try {
   const raw = await API.get("/api/images");
   images = _sortImages(raw);
 
   const grid = document.getElementById("gallery");
   const empty = document.getElementById("empty-msg");
-  document.getElementById("loading-msg").classList.add("hidden");
   grid.innerHTML = "";
 
   if (images.length === 0) {
@@ -109,6 +109,9 @@ async function loadGallery() {
     }
 
     currentRow.appendChild(_makeTile(img, _imageUrls[img.id]));
+  }
+  } finally {
+    document.getElementById("loading-msg").classList.add("hidden");
   }
 }
 
