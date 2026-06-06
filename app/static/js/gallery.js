@@ -202,9 +202,13 @@ document.getElementById("lightbox").addEventListener("click", e => {
 document.getElementById("lb-delete").addEventListener("click", async () => {
   if (!_activeImage) return;
   if (!confirm(`Delete "${_activeImage.name}"?`)) return;
-  await API.delete(`/api/images/${_activeImage.id}`);
-  document.getElementById("lightbox").classList.add("hidden");
-  loadGallery();
+  const deletedId = _activeImage.id;
+  const nextIndex = _activeIndex < images.length - 1 ? _activeIndex : _activeIndex - 1;
+  await API.delete(`/api/images/${deletedId}`);
+  await loadGallery();
+  const next = images.find((_, i) => i === nextIndex);
+  if (next && images.length > 0) openLightbox(next, _imageUrls[next.id]);
+  else { document.getElementById("lightbox").classList.add("hidden"); _activeImage = null; }
 });
 
 // ── Lightbox edit mode ─────────────────────────────────────────────────────────
