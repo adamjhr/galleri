@@ -272,7 +272,9 @@ document.getElementById("upload-form").addEventListener("submit", async e => {
   btn.textContent = files.length > 1 ? `Uploading 0 / ${files.length}…` : "Uploading…";
 
   try {
+    console.log("Starting batch upload of", files.length, "files");
     for (let i = 0; i < files.length; i++) {
+      console.log(`Uploading file ${i + 1} / ${files.length}:`, files[i].name);
       if (files.length > 1) btn.textContent = `Uploading ${i + 1} / ${files.length}…`;
 
       const fileBytes = await files[i].arrayBuffer();
@@ -285,8 +287,9 @@ document.getElementById("upload-form").addEventListener("submit", async e => {
       if (date_value) fd.append("date_value", date_value);
       if (date_precision) fd.append("date_precision", date_precision);
       await API.postForm("/api/images", fd);
+      console.log(`File ${i + 1} uploaded OK`);
     }
-
+    console.log("Batch complete");
     _resetUploadModal();
     await loadGallery();
   } catch (ex) {
