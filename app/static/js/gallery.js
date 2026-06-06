@@ -155,12 +155,36 @@ async function navigateLightbox(delta) {
   openLightbox(img, _imageUrls[img.id]);
 }
 
+function _isEditMode() {
+  return !document.getElementById("lb-edit-mode").classList.contains("hidden");
+}
+
 document.addEventListener("keydown", e => {
   const lb = document.getElementById("lightbox");
   if (lb.classList.contains("hidden")) return;
-  if (e.key === "ArrowRight") navigateLightbox(1);
-  else if (e.key === "ArrowLeft") navigateLightbox(-1);
-  else if (e.key === "Escape") { lb.classList.add("hidden"); _activeImage = null; }
+
+  if (e.key === "Escape") {
+    if (_isEditMode()) exitEditMode();
+    else { lb.classList.add("hidden"); _activeImage = null; }
+    return;
+  }
+
+  if (e.ctrlKey && e.key === "e") {
+    e.preventDefault();
+    if (!_isEditMode() && _activeImage) enterEditMode();
+    return;
+  }
+
+  if (e.ctrlKey && e.key === "s") {
+    e.preventDefault();
+    if (_isEditMode()) document.getElementById("lb-save").click();
+    return;
+  }
+
+  if (!_isEditMode()) {
+    if (e.key === "ArrowRight") navigateLightbox(1);
+    else if (e.key === "ArrowLeft") navigateLightbox(-1);
+  }
 });
 
 document.getElementById("lb-close").addEventListener("click", () => {
