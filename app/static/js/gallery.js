@@ -263,18 +263,23 @@ document.getElementById("upload-form").addEventListener("submit", async e => {
   err.classList.add("hidden");
   btn.disabled = true;
 
-  const files = document.getElementById("up-file").files;
+  // Snapshot FileList into an array immediately — FileList can become stale after awaits
+  const files = Array.from(document.getElementById("up-file").files);
+  const name = document.getElementById("up-name").value;
+  const description = document.getElementById("up-desc").value;
+  const { date_value, date_precision } = DateField.read("up");
+
   btn.textContent = files.length > 1 ? `Uploading 0 / ${files.length}…` : "Uploading…";
 
   try {
-    const { date_value, date_precision } = DateField.read("up");
-    const name = document.getElementById("up-name").value;
-    const description = document.getElementById("up-desc").value;
-
     for (let i = 0; i < files.length; i++) {
       if (files.length > 1) btn.textContent = `Uploading ${i + 1} / ${files.length}…`;
+
+      const fileBytes = await files[i].arrayBuffer();
+      const blob = new Blob([fileBytes], { type: files[i].type || "application/octet-stream" });
+
       const fd = new FormData();
-      fd.append("file", files[i]);
+      fd.append("file", blob, files[i].name);
       fd.append("name", name);
       fd.append("description", description);
       if (date_value) fd.append("date_value", date_value);
