@@ -1,4 +1,3 @@
-console.log("gallery.js: top");
 Auth.requireAuth();
 
 if (Auth.isAdmin()) {
@@ -257,16 +256,13 @@ function _resetUploadModal() {
 
 document.getElementById("up-cancel").addEventListener("click", _resetUploadModal);
 
-console.log("gallery.js: attaching submit handler");
 document.getElementById("upload-form").addEventListener("submit", async e => {
-  console.log("gallery.js: submit fired");
   e.preventDefault();
   const err = document.getElementById("up-error");
   const btn = document.getElementById("up-submit");
   err.classList.add("hidden");
   btn.disabled = true;
 
-  // Snapshot FileList into an array immediately — FileList can become stale after awaits
   const files = Array.from(document.getElementById("up-file").files);
   const name = document.getElementById("up-name").value;
   const description = document.getElementById("up-desc").value;
@@ -275,9 +271,7 @@ document.getElementById("upload-form").addEventListener("submit", async e => {
   btn.textContent = files.length > 1 ? `Uploading 0 / ${files.length}…` : "Uploading…";
 
   try {
-    console.log("Starting batch upload of", files.length, "files");
     for (let i = 0; i < files.length; i++) {
-      console.log(`Uploading file ${i + 1} / ${files.length}:`, files[i].name);
       if (files.length > 1) btn.textContent = `Uploading ${i + 1} / ${files.length}…`;
 
       const fileBytes = await files[i].arrayBuffer();
@@ -290,9 +284,7 @@ document.getElementById("upload-form").addEventListener("submit", async e => {
       if (date_value) fd.append("date_value", date_value);
       if (date_precision) fd.append("date_precision", date_precision);
       await API.postForm("/api/images", fd);
-      console.log(`File ${i + 1} uploaded OK`);
     }
-    console.log("Batch complete");
     _resetUploadModal();
     await loadGallery();
   } catch (ex) {
