@@ -1,5 +1,6 @@
 .env
 .env.local
+SERVER.md
 __pycache__/
 *.pyc
 *.pyo
