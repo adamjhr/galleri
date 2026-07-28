@@ -18,10 +18,6 @@ class Config:
     # Optional: overrides the S3 endpoint used server-side (e.g. Docker service name)
     DO_SPACES_INTERNAL_ENDPOINT = os.environ.get("DO_SPACES_INTERNAL_ENDPOINT")
 
-    JWT_SECRET = os.environ["JWT_SECRET"]
-    JWT_ACCESS_EXPIRES_MINUTES = int(os.environ.get("JWT_ACCESS_EXPIRES_MINUTES", 15))
-    JWT_REFRESH_EXPIRES_DAYS = int(os.environ.get("JWT_REFRESH_EXPIRES_DAYS", 7))
-
     MAX_UPLOAD_BYTES = 20 * 1024 * 1024  # 20 MB
 
     ALLOWED_MIME_TYPES = {

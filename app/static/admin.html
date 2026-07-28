@@ -17,29 +17,14 @@
 
   <main class="admin-main">
     <section>
-      <h2>Invite a user</h2>
-      <form id="invite-form">
-        <label for="invite-email">Email address</label>
-        <input id="invite-email" type="email" required>
-        <button type="submit">Create invite</button>
-      </form>
-      <p id="invite-error" class="error hidden"></p>
-      <div id="invite-result" class="invite-result hidden">
-        <p>Share this link with the invitee:</p>
-        <input id="invite-link" type="text" readonly>
-        <button id="invite-copy">Copy</button>
-      </div>
-    </section>
-
-    <section>
       <h2>Users</h2>
+      <p class="hint">Users are managed in Authelia's <code>users_database.yml</code> on the server.</p>
       <table id="users-table">
         <thead>
           <tr>
             <th>Username</th>
             <th>Email</th>
             <th>Admin</th>
-            <th>Status</th>
             <th>Joined</th>
           </tr>
         </thead>

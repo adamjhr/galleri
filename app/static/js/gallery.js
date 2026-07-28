@@ -1,12 +1,12 @@
-Auth.requireAuth();
+let _isAdmin = false;
 
-if (Auth.isAdmin()) {
-  document.getElementById("admin-link").classList.remove("hidden");
-}
+Auth.me().then(me => {
+  _isAdmin = me.is_admin;
+  if (_isAdmin) document.getElementById("admin-link").classList.remove("hidden");
+});
 
-document.getElementById("logout-btn").addEventListener("click", async () => {
-  await Auth.logout();
-  location.replace("/login.html");
+document.getElementById("logout-btn").addEventListener("click", () => {
+  Auth.logout();
 });
 
 DateField.init("up");
@@ -138,7 +138,7 @@ function openLightbox(img, url) {
   document.getElementById("lb-download").rel = "noopener noreferrer";
 
   const deleteBtn = document.getElementById("lb-delete");
-  deleteBtn.classList.toggle("hidden", !Auth.isAdmin() && img.uploaded_by !== null);
+  deleteBtn.classList.toggle("hidden", !_isAdmin && img.uploaded_by !== null);
 
   document.getElementById("lightbox").classList.remove("hidden");
 }
