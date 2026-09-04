@@ -4,3 +4,4 @@ psycopg2-binary==2.9.10
 boto3==1.38.22
 python-dotenv==1.1.0
 python-magic==0.4.27
+pillow==10.2.0

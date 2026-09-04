@@ -18,6 +18,12 @@ class Config:
     # Optional: overrides the S3 endpoint used server-side (e.g. Docker service name)
     DO_SPACES_INTERNAL_ENDPOINT = os.environ.get("DO_SPACES_INTERNAL_ENDPOINT")
 
+    # Local-dev-only stand-in for Authelia's Remote-User header. Must never be set
+    # outside docker-compose local dev — leave unset in every real environment.
+    DEV_AUTH_BYPASS_USER = os.environ.get("DEV_AUTH_BYPASS_USER")
+    DEV_AUTH_BYPASS_EMAIL = os.environ.get("DEV_AUTH_BYPASS_EMAIL", "dev@localhost")
+    DEV_AUTH_BYPASS_GROUPS = os.environ.get("DEV_AUTH_BYPASS_GROUPS", "admins")
+
     MAX_UPLOAD_BYTES = 20 * 1024 * 1024  # 20 MB
 
     ALLOWED_MIME_TYPES = {

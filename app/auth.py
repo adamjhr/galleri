@@ -1,6 +1,6 @@
 from functools import wraps
 
-from flask import g, jsonify, request
+from flask import current_app, g, jsonify, request
 
 from app.db import get_conn
 
@@ -45,13 +45,22 @@ def require_auth(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         username = request.headers.get("Remote-User", "").strip()
+        email = request.headers.get("Remote-Email", "").strip()
+        groups_header = request.headers.get("Remote-Groups", "")
+
+        if not username:
+            bypass_user = current_app.config.get("DEV_AUTH_BYPASS_USER")
+            if bypass_user:
+                username = bypass_user
+                email = current_app.config["DEV_AUTH_BYPASS_EMAIL"]
+                groups_header = current_app.config["DEV_AUTH_BYPASS_GROUPS"]
+
         if not username:
             return jsonify({"error": "Missing identity"}), 401
 
-        email = request.headers.get("Remote-Email", "").strip()
         groups = [
             grp.strip()
-            for grp in request.headers.get("Remote-Groups", "").split(",")
+            for grp in groups_header.split(",")
             if grp.strip()
         ]
         is_admin = ADMIN_GROUP in groups

@@ -7,6 +7,7 @@ from flask import Blueprint, jsonify, request, g, current_app
 from app import auth as auth_helpers
 from app.db import get_conn
 from app import storage
+from app import metadata as metadata_helpers
 
 bp = Blueprint("images", __name__, url_prefix="/api/images")
 
@@ -100,6 +101,13 @@ def upload_image():
     file_size = len(file_bytes)
     if file_size > cfg["MAX_UPLOAD_BYTES"]:
         return jsonify({"error": "File exceeds 20 MB limit"}), 413
+
+    use_metadata_date = request.form.get("use_metadata_date") == "true"
+    if use_metadata_date:
+        metadata_date = metadata_helpers.extract_date(file_bytes)
+        if metadata_date is not None:
+            date_value = metadata_date
+            date_precision = "day"
 
     bucket_key = str(uuid.uuid4())
     storage.upload_file(io.BytesIO(file_bytes), bucket_key, detected_mime)

@@ -282,6 +282,7 @@ function _resetUploadModal() {
   document.getElementById("upload-modal").classList.add("hidden");
   document.getElementById("upload-form").reset();
   document.getElementById("up-file-count").classList.add("hidden");
+  document.getElementById("up-use-metadata-date").checked = true;
   DateField.reset("up");
   document.getElementById("up-error").classList.add("hidden");
 }
@@ -299,6 +300,7 @@ document.getElementById("upload-form").addEventListener("submit", async e => {
   const name = document.getElementById("up-name").value;
   const description = document.getElementById("up-desc").value;
   const { date_value, date_precision } = DateField.read("up");
+  const useMetadataDate = document.getElementById("up-use-metadata-date").checked;
 
   btn.textContent = files.length > 1 ? `Uploading 0 / ${files.length}…` : "Uploading…";
 
@@ -315,6 +317,7 @@ document.getElementById("upload-form").addEventListener("submit", async e => {
       fd.append("description", description);
       if (date_value) fd.append("date_value", date_value);
       if (date_precision) fd.append("date_precision", date_precision);
+      fd.append("use_metadata_date", useMetadataDate ? "true" : "false");
       await API.postForm("/api/images", fd);
     }
     _resetUploadModal();
